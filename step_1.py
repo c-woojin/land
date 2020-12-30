@@ -338,6 +338,7 @@ def main():
             print(f'[{count}/{len(complexes)}] 수집중...', end='\r')
             c = get_complex_detail(complex_no)
             wt.writerows(c.make_rows())
+            wt.writerow([""])
             print(f'[{count}/{len(complexes)}] {c.complex_name} 단지 데이터를 수집을 완료하였습니다!')
             count += 1
 

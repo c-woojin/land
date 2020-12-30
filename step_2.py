@@ -83,6 +83,8 @@ def main():
                 next(rows)  # skip header
                 row_no = 1
                 for row in rows:
+                    if len(row) <= 1:
+                        continue
                     is_representative = row[22].lower()
                     pyeong = int(row[4]) if row[4] else 0
                     if is_representative == "v" and (analysis_pyeong <= pyeong < analysis_pyeong + 10):
