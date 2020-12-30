@@ -9,6 +9,7 @@ def main():
     print("동별 가격 분석을 시작합니다..")
     files = os.listdir("./")
     files = [file for file in files if file.endswith('csv') and not file.startswith('_')]
+    files.sort()
     if len(files) == 0:
         print("분석할 데이터 파일이 없습니다.")
         return
@@ -73,7 +74,7 @@ def main():
 
     for file in files:
         try:
-            town = file[15:-4]
+            town = file[:-19]
             towns.append(town)
             prices_by_towns[(town, 'old')] = []
             prices_by_towns[(town, 'sub_latest')] = []
@@ -137,13 +138,14 @@ def main():
         result.reverse()
 
         for key, items in prices_by_towns.items():
+            items.sort(key=lambda x: x.get('price'), reverse=True)
             for d in items:
                 for r in result:
                     low, high = r.get('period')
                     if low <= d.get('price') < high:
                         r.get('complexes').get(key).append(f"{d.get('name')}({d.get('pyeong')}평/{d.get('price')}/{str(d.get('approved_year'))[2:]}년)")
         created_time = datetime.now(timezone(timedelta(hours=9)))
-        file_name = f"_({created_time.strftime('%y%m%d_%H%M%S')})_{analysis_pyeong}평_동별가격_분석"
+        file_name = f"_{analysis_pyeong}평_동별가격_분석_({created_time.strftime('%y%m%d_%H%M%S')})"
         with open(f'./{file_name}.csv', 'w', encoding='utf-8-sig', newline='') as f:
             wt = csv.writer(f)
             headers = []

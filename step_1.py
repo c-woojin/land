@@ -323,7 +323,7 @@ def main():
         break
 
     created_time = datetime.now(timezone(timedelta(hours=9)))
-    file_name = f"({created_time.strftime('%y%m%d_%H%M%S')}){selected_city}_{selected_dvsns}_{selected_towns}"
+    file_name = f"{selected_city}_{selected_dvsns}_{selected_towns}_({created_time.strftime('%y%m%d_%H%M%S')})"
     with open(f'./{file_name}.csv', 'w', encoding='utf-8-sig', newline='') as f:
         wt = csv.writer(f)
         wt.writerow(['단지명', '입주연도', '총세대수', '공급(㎡)', '공급면적', '전용(㎡)', '전용면적', '세대', '매매최저가', '층',
