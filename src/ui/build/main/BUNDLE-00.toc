@@ -1,0 +1,1 @@
+([('main', '/Users/will/src/land/src/ui/dist/main', 'EXECUTABLE')],)
