@@ -38,7 +38,7 @@ class MyApp(QWidget):
     def init_ui(self):
         self.main_box = QVBoxLayout()
         self.set_default_box()
-        self.setWindowTitle('QComboBox')
+        self.setWindowTitle('SuperRich')
         self.setGeometry(300, 300, 300, 200)
         self.show()
         self.cities = service.get_main_cities()
