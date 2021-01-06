@@ -161,7 +161,7 @@ class MyApp(QWidget):
         for complex in complexes:
             if self.is_progress_canceled is True:
                 self.is_progress_canceled = False
-                break
+                return
             time.sleep(0.3)
             progress_text = f'[{progress}/{len(complexes)}] {complex.complex_name} 단지 데이터를 수집중입니다.'
             progress_dialog.setLabelText(progress_text)
