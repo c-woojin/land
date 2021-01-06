@@ -86,6 +86,15 @@ class NaverLandProvider(AbstractLandProvider):
         if not response.ok:
             raise RequestError('complex_details request to Naver failed.', response.text)
         pyeongs = response.json().get('complexPyeongDetailList', [])
+        for pyeong in pyeongs:
+            try:
+                int(pyeong.get('roomCnt'))
+            except ValueError:
+                pyeong['roomCnt'] = 0
+            try:
+                int(pyeong.get('bathroomCnt'))
+            except ValueError:
+                pyeong['bathroomCnt'] = 0
         pyeongs = [Pyeong(
             pyeong_no=pyeong.get('pyeongNo'),
             pyeong_name=pyeong.get('pyeongName2'),
@@ -94,8 +103,8 @@ class NaverLandProvider(AbstractLandProvider):
             supply_area=pyeong.get('supplyArea'),
             house_hold_count=pyeong.get('householdCountByPyeong'),
             entrance_type=pyeong.get('entranceType'),
-            room_count=int(pyeong.get('roomCnt')),
-            bathroom_count=int(pyeong.get('bathroomCnt')),
+            room_count=self.make_safe_int(pyeong.get('roomCnt')),
+            bathroom_count=self.make_safe_int(pyeong.get('bathroomCnt')),
             is_restriction=True if pyeong.get('dealRestrictionYearMonthDay') else False,
         ) for pyeong in pyeongs]
         complex = response.json().get('complexDetail')
@@ -103,10 +112,10 @@ class NaverLandProvider(AbstractLandProvider):
             complex_no=complex.get('complexNo'),
             complex_name=complex.get('complexName'),
             address=complex.get('address', '') + complex.get('detailAddress', ''),
-            total_dong_count=int(complex.get('totalDongCount')),
-            total_household_count=int(complex.get('totalHouseholdCount')),
+            total_dong_count=self.make_safe_int(complex.get('totalDongCount')),
+            total_household_count=self.make_safe_int(complex.get('totalHouseholdCount')),
             completion_date=self.make_completion_date(complex.get('useApproveYmd')),
-            high_floor=int(complex.get('highFloor')),
+            high_floor=self.make_safe_int(complex.get('highFloor')),
             type_name=complex.get('realEstateTypeName'),
             pyeongs=pyeongs
         )
@@ -131,8 +140,8 @@ class NaverLandProvider(AbstractLandProvider):
                         trade_date=date(
                             int(price.get('tradeYear')), int(price.get('tradeMonth')), int(price.get('tradeDate'))
                         ),
-                        price=int(price.get(trade_type.value.get('price_field_name'))),
-                        floor=int(price.get('floor'))
+                        price=self.make_safe_int(price.get(trade_type.value.get('price_field_name'))),
+                        floor=self.make_safe_int(price.get('floor'))
                     ) for price in prices.get('realPriceList', [])
                 ]
             } for prices in response.json().get('realPriceOnMonthList', [])
@@ -143,3 +152,9 @@ class NaverLandProvider(AbstractLandProvider):
         month = int(ymd[4:6]) if ymd[4:6] else 1
         day = int(ymd[6:]) if ymd[6:] else 1
         return date(year=year, month=month, day=day)
+
+    def make_safe_int(self, value) -> int:
+        try:
+            return int(value)
+        except ValueError:
+            return 0

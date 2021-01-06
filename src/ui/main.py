@@ -130,16 +130,18 @@ class MyApp(QWidget):
             self.data_edit_view.show()
 
     def data_excel_pushed(self):
-        file_name, ok = QFileDialog.getSaveFileUrl(self, "저장할 위치를 선택하세요.")
-        if ok:
-            data_handler.LandXlsHandler(file_name.path() + ".xlsx", self.data).write_raw_xls()
-            QMessageBox.information(self, "성공", "엑셀추출이 완료되었습니다.", QMessageBox.Ok)
+        if self.data:
+            file_name, ok = QFileDialog.getSaveFileUrl(self, "저장할 위치를 선택하세요.")
+            if ok:
+                data_handler.LandXlsHandler(file_name.path() + ".xlsx", self.data).write_raw_xls()
+                QMessageBox.information(self, "성공", "엑셀추출이 완료되었습니다.", QMessageBox.Ok)
 
     def data_analysis_excel_pushed(self):
-        file_name, ok = QFileDialog.getSaveFileUrl(self, "저장할 위치를 선택하세요.")
-        if ok:
-            data_handler.LandXlsHandler(file_name.path() + ".xlsx", self.data).write_analysis_xls(2010, 2000)
-            QMessageBox.information(self, "성공", "엑셀추출이 완료되었습니다.", QMessageBox.Ok)
+        if self.data:
+            file_name, ok = QFileDialog.getSaveFileUrl(self, "저장할 위치를 선택하세요.")
+            if ok:
+                data_handler.LandXlsHandler(file_name.path() + ".xlsx", self.data).write_analysis_xls(2010, 2000)
+                QMessageBox.information(self, "성공", "엑셀추출이 완료되었습니다.", QMessageBox.Ok)
 
     def start_import(self):
         town_index = self.cb_town.currentIndex()
