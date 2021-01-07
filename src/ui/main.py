@@ -133,7 +133,6 @@ class MyApp(QWidget):
         if self.data:
             file_name, ok = QFileDialog.getSaveFileUrl(self, "저장할 위치를 선택하세요.")
             if ok:
-                print(file_name.path())
                 data_handler.LandXlsHandler(file_name.path() + ".xlsx", self.data).write_raw_xls()
                 QMessageBox.information(self, "성공", "엑셀추출이 완료되었습니다.", QMessageBox.Ok)
 
