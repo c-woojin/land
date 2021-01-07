@@ -40,12 +40,6 @@ class MyApp(QWidget):
         self.set_default_box()
         self.setWindowTitle('SuperRich')
         self.setGeometry(300, 300, 300, 200)
-        self.show()
-        self.cities = service.get_main_cities()
-        self.cb_city.clear()
-        self.cb_city.addItem('선택')
-        for city in self.cities:
-            self.cb_city.addItem(city.region_name)
 
     def set_default_box(self):
         lbl_city = QLabel('시/도')
@@ -80,6 +74,13 @@ class MyApp(QWidget):
         self.main_box.addLayout(btn_box)
         self.main_box.addLayout(data_list_box)
         self.setLayout(self.main_box)
+
+    def set_cities(self):
+        self.cities = service.get_main_cities()
+        self.cb_city.clear()
+        self.cb_city.addItem('선택')
+        for city in self.cities:
+            self.cb_city.addItem(city.region_name)
 
     def init_handler(self):
         self.cb_city.activated.connect(self.city_selected)
@@ -125,7 +126,6 @@ class MyApp(QWidget):
     def data_edit_pushed(self):
         if self.data:
             row = self.data_list_widget.currentRow()
-            print(self.data[row][1])
             self.data_edit_view = DataEditView(data=self.data[row][1])
             self.data_edit_view.show()
 
@@ -133,6 +133,7 @@ class MyApp(QWidget):
         if self.data:
             file_name, ok = QFileDialog.getSaveFileUrl(self, "저장할 위치를 선택하세요.")
             if ok:
+                print(file_name.path())
                 data_handler.LandXlsHandler(file_name.path() + ".xlsx", self.data).write_raw_xls()
                 QMessageBox.information(self, "성공", "엑셀추출이 완료되었습니다.", QMessageBox.Ok)
 
@@ -187,4 +188,6 @@ class MyApp(QWidget):
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     ex = MyApp()
+    ex.set_cities()
+    ex.show()
     sys.exit(app.exec_())

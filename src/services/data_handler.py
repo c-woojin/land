@@ -1,4 +1,4 @@
-import re
+from os import path
 from typing import List, Tuple, Dict
 from datetime import date, timedelta
 from math import floor
@@ -11,7 +11,7 @@ from src.domain.values import Region
 
 class LandXlsHandler:
     def __init__(self, file_name: str, data: List[Tuple[Region, List[Complex]]]):
-        self.file_name = file_name
+        self.file_name = path.relpath(file_name, '.')
         self.data = data
 
     def write_raw_xls(self):
