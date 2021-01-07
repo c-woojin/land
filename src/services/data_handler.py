@@ -12,7 +12,7 @@ from src.domain.values import Region
 class LandXlsHandler:
     def __init__(self, file_name: str, data: List[Tuple[Region, List[Complex]]]):
         self.file_name = file_name[1:] if os.name == 'nt' else file_name
-        self.file_name = os.path.abspath(self.file_name, '.')
+        self.file_name = os.path.abspath(self.file_name)
         self.data = data
 
     def write_raw_xls(self):

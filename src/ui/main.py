@@ -187,6 +187,6 @@ class MyApp(QWidget):
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     ex = MyApp()
-    ex.set_cities()
     ex.show()
+    ex.set_cities()
     sys.exit(app.exec_())
