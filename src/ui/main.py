@@ -11,6 +11,7 @@ from src.services import service, data_handler
 from src.domain.entity.complex import Complex
 from src.domain.values import Region
 from src.ui.data_edit import DataEditView
+from src.ui.pop_up import PopUp
 
 
 class MyApp(QWidget):
@@ -148,12 +149,11 @@ class MyApp(QWidget):
         if town_index == -1 or town_index == 0:
             return
         town = self.towns[town_index-1]
-        wait_pop = QMessageBox(text="잠시만 기다려 주세요", parent=self)
-        wait_pop.setWindowModality(Qt.WindowModal)
-        wait_pop.show()
+        self.wait_pop = PopUp("잠시만 기다려 주세요", self)
+        self.wait_pop.show()
         complexes = service.get_complexes(town.region_no)
         progress_title = f'{self.cb_city.currentText()} {self.cb_region.currentText()} {self.cb_town.currentText()} {len(complexes)}개 단지의 데이터를 수집합니다.'
-        wait_pop.close()
+        self.wait_pop.close()
         progress_dialog = QProgressDialog(progress_title, "취소", 0, len(complexes)+1, self) if complexes else QProgressDialog("수집할 데이터가 없습니다.", "취소", 0, len(complexes)+1, self)
         progress_dialog.canceled.connect(self.progress_canceled)
         progress = 0
