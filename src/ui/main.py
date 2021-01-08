@@ -160,13 +160,23 @@ class MyApp(QWidget):
 
     def data_analysis_excel_pushed(self):
         if self.data:
-            latest_year, ok = QInputDialog.getText(self, "신축기준년도", "신축기준년도를 입력하세요:")
-            if not ok:
-                return
+            while True:
+                try:
+                    latest_year, ok = int(QInputDialog.getText(self, "신축기준년도", "신축기준년도를 입력하세요:"))
+                    if not ok:
+                        return
+                    break
+                except ValueError:
+                    continue
 
-            sub_latest_year, ok = QInputDialog.getText(self, "준 신축기준년도", "준 신축기준년도를 입력하세요:")
-            if not ok:
-                return
+            while True:
+                try:
+                    sub_latest_year, ok = int(QInputDialog.getText(self, "준 신축기준년도", "준 신축기준년도를 입력하세요:"))
+                    if not ok:
+                        return
+                    break
+                except ValueError:
+                    continue
 
             file_name, ok = QFileDialog.getSaveFileUrl(self, "저장할 위치를 선택하세요.")
             if ok:
