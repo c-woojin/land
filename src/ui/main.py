@@ -3,7 +3,7 @@ import time
 from typing import List, Tuple
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QLabel, QComboBox, QHBoxLayout, QVBoxLayout, QPushButton,
-    QProgressDialog, QMessageBox, QListWidget, QListWidgetItem, QFileDialog, QLineEdit, QSlider
+    QProgressDialog, QMessageBox, QListWidget, QListWidgetItem, QFileDialog, QLineEdit, QInputDialog
 )
 from PyQt5.QtCore import Qt
 
@@ -160,9 +160,18 @@ class MyApp(QWidget):
 
     def data_analysis_excel_pushed(self):
         if self.data:
+            latest_year, ok = QInputDialog.getText(self, "신축기준년도", "신축기준년도를 입력하세요:")
+            if not ok:
+                return
+
+            sub_latest_year, ok = QInputDialog.getText(self, "준 신축기준년도", "준 신축기준년도를 입력하세요:")
+            if not ok:
+                return
+
             file_name, ok = QFileDialog.getSaveFileUrl(self, "저장할 위치를 선택하세요.")
             if ok:
-                data_handler.LandXlsHandler(file_name.path() + ".xlsx", self.filtered_data()).write_analysis_xls(2010, 2000)
+                xls_handler = data_handler.LandXlsHandler(file_name.path() + ".xlsx", self.filtered_data())
+                xls_handler.write_analysis_xls(latest_year, sub_latest_year)
                 QMessageBox.information(self, "성공", "엑셀추출이 완료되었습니다.", QMessageBox.Ok)
 
     def input_low_household_count_changed(self, text):
