@@ -73,7 +73,7 @@ class NaverLandProvider(AbstractLandProvider):
     def list_complexes(self, region_no: str) -> List[str]:
         params = {
             'cortarNo': region_no,
-            'realEstateType': 'APT:ABYG:JGC'
+            'realEstateType': 'APT:ABYG:JGC',
         }
         response = self.session.get(self.base_url+"regions/complexes", params=params)
         if not response.ok:

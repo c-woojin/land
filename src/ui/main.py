@@ -3,7 +3,7 @@ import time
 from typing import List, Tuple
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QLabel, QComboBox, QHBoxLayout, QVBoxLayout, QPushButton,
-    QProgressDialog, QMessageBox, QListWidget, QListWidgetItem, QFileDialog
+    QProgressDialog, QMessageBox, QListWidget, QListWidgetItem, QFileDialog, QLineEdit, QSlider
 )
 from PyQt5.QtCore import Qt
 
@@ -14,6 +14,8 @@ from src.ui.data_edit import DataEditView
 
 
 class MyApp(QWidget):
+    MIN_HOUSEHOLD_COUNT = 0
+    MAX_HOUSEHOLD_COUNT = 100000
 
     def __init__(self):
         super().__init__()
@@ -31,6 +33,10 @@ class MyApp(QWidget):
         self.btn_data_edit = QPushButton('자세히')
         self.btn_data_excel = QPushButton('엑셀출력(평형데이터)')
         self.btn_data_analysis_excel = QPushButton('엑셀출력(동별가격비교)')
+        self.input_low_household_count = QLineEdit()
+        self.set_low_hc = self.MIN_HOUSEHOLD_COUNT
+        self.input_high_household_count = QLineEdit()
+        self.set_high_hc = self.MAX_HOUSEHOLD_COUNT
         self.main_box = QVBoxLayout()
         self.init_handler()
         self.init_ui()
@@ -61,18 +67,32 @@ class MyApp(QWidget):
         btn_box = QHBoxLayout()
         btn_box.addWidget(self.btn_import)
 
-        data_list_box = QHBoxLayout()
-        data_list_box.addWidget(self.data_list_widget)
-        data_list_btn_box = QVBoxLayout()
-        data_list_btn_box.addWidget(self.btn_data_remove)
-        data_list_btn_box.addWidget(self.btn_data_edit)
-        data_list_btn_box.addWidget(self.btn_data_excel)
-        data_list_btn_box.addWidget(self.btn_data_analysis_excel)
-        data_list_box.addLayout(data_list_btn_box)
+        data_group_box = QHBoxLayout()
+
+        data_left_box = QVBoxLayout()
+        data_left_box.addWidget(self.btn_data_remove)
+        data_left_box.addWidget(self.btn_data_edit)
+        data_left_box.addWidget(self.data_list_widget)
+
+        data_right_box = QVBoxLayout()
+        data_right_box.addWidget(QLabel('엑셀출력조건설정'))
+        data_right_low_filter_box = QHBoxLayout()
+        data_right_low_filter_box.addWidget(QLabel('최소세대수:'))
+        data_right_low_filter_box.addWidget(self.input_low_household_count)
+        data_right_high_filter_box = QHBoxLayout()
+        data_right_high_filter_box.addWidget(QLabel('최대세대수:'))
+        data_right_high_filter_box.addWidget(self.input_high_household_count)
+        data_right_box.addLayout(data_right_low_filter_box)
+        data_right_box.addLayout(data_right_high_filter_box)
+        data_right_box.addWidget(self.btn_data_excel)
+        data_right_box.addWidget(self.btn_data_analysis_excel)
+
+        data_group_box.addLayout(data_left_box)
+        data_group_box.addLayout(data_right_box)
 
         self.main_box.addLayout(region_select_box)
         self.main_box.addLayout(btn_box)
-        self.main_box.addLayout(data_list_box)
+        self.main_box.addLayout(data_group_box)
         self.setLayout(self.main_box)
 
     def set_cities(self):
@@ -90,6 +110,8 @@ class MyApp(QWidget):
         self.btn_data_edit.clicked.connect(self.data_edit_pushed)
         self.btn_data_excel.clicked.connect(self.data_excel_pushed)
         self.btn_data_analysis_excel.clicked.connect(self.data_analysis_excel_pushed)
+        self.input_low_household_count.textChanged.connect(self.input_low_household_count_changed)
+        self.input_high_household_count.textChanged.connect(self.input_high_household_count_changed)
 
     def city_selected(self):
         city_index = self.cb_city.currentIndex()
@@ -133,15 +155,39 @@ class MyApp(QWidget):
         if self.data:
             file_name, ok = QFileDialog.getSaveFileUrl(self, "저장할 위치를 선택하세요.")
             if ok:
-                data_handler.LandXlsHandler(file_name.path() + ".xlsx", self.data).write_raw_xls()
+                data_handler.LandXlsHandler(file_name.path() + ".xlsx", self.filtered_data()).write_raw_xls()
                 QMessageBox.information(self, "성공", "엑셀추출이 완료되었습니다.", QMessageBox.Ok)
 
     def data_analysis_excel_pushed(self):
         if self.data:
             file_name, ok = QFileDialog.getSaveFileUrl(self, "저장할 위치를 선택하세요.")
             if ok:
-                data_handler.LandXlsHandler(file_name.path() + ".xlsx", self.data).write_analysis_xls(2010, 2000)
+                data_handler.LandXlsHandler(file_name.path() + ".xlsx", self.filtered_data()).write_analysis_xls(2010, 2000)
                 QMessageBox.information(self, "성공", "엑셀추출이 완료되었습니다.", QMessageBox.Ok)
+
+    def input_low_household_count_changed(self, text):
+        try:
+            if len(text) and self.MIN_HOUSEHOLD_COUNT <= int(text) <= self.MAX_HOUSEHOLD_COUNT:
+                self.set_low_hc = int(text)
+            else:
+                if not len(text):
+                    self.set_low_hc = self.MIN_HOUSEHOLD_COUNT
+                    return
+                raise ValueError
+        except ValueError:
+            self.input_low_household_count.setText(str(self.set_low_hc))
+
+    def input_high_household_count_changed(self, text):
+        try:
+            if len(text) and self.MIN_HOUSEHOLD_COUNT <= int(text) <= self.MAX_HOUSEHOLD_COUNT:
+                self.set_high_hc = int(text)
+            else:
+                if not len(text):
+                    self.set_high_hc = self.MAX_HOUSEHOLD_COUNT
+                    return
+                raise ValueError
+        except ValueError:
+            self.input_high_household_count.setText(str(self.set_high_hc))
 
     def start_import(self):
         town_index = self.cb_town.currentIndex()
@@ -182,6 +228,13 @@ class MyApp(QWidget):
         self.data.append(data)
         item = QListWidgetItem(data[0].region_name)
         self.data_list_widget.addItem(item)
+
+    def filtered_data(self):
+        result = []
+        for town, complex_list in self.data:
+            filtered_cs = [c for c in complex_list if self.set_low_hc <= c.total_household_count <= self.set_high_hc]
+            result.append((town, filtered_cs))
+        return result
 
 
 if __name__ == '__main__':
