@@ -162,20 +162,22 @@ class MyApp(QWidget):
         if self.data:
             while True:
                 try:
-                    latest_year, ok = int(QInputDialog.getText(self, "신축기준년도", "신축기준년도를 입력하세요:"))
+                    latest_year, ok = QInputDialog.getText(self, "신축기준년도", "신축기준년도를 입력하세요:")
+                    latest_year = int(latest_year)
                     if not ok:
                         return
                     break
-                except ValueError:
+                except (ValueError, TypeError):
                     continue
 
             while True:
                 try:
-                    sub_latest_year, ok = int(QInputDialog.getText(self, "준 신축기준년도", "준 신축기준년도를 입력하세요:"))
+                    sub_latest_year, ok = QInputDialog.getText(self, "준 신축기준년도", "준 신축기준년도를 입력하세요:")
+                    sub_latest_year = int(sub_latest_year)
                     if not ok:
                         return
                     break
-                except ValueError:
+                except (ValueError, TypeError):
                     continue
 
             file_name, ok = QFileDialog.getSaveFileUrl(self, "저장할 위치를 선택하세요.")
