@@ -45,7 +45,7 @@ class LandXlsHandler:
 
                     current_sheet.append(
                         [c.complex_name,
-                         f"'{c.completion_date.strftime('%Y-%m')}",
+                         f"'{c.completion_date.strftime('%Y-%m')}" if c.completion_date else "",
                          c.total_household_count,
                          p.supply_area,
                          int_pyeong,
@@ -92,58 +92,59 @@ class LandXlsHandler:
 
         for town, complexes in self.data:
             for c in complexes:
-                for p in c.pyeongs:
-                    if p.is_representative and (10 <= p.int_pyeong < 50):
-                        if p.low_trade_price:
-                            # high_price setting
-                            if p.int_pyeong < 20 and p.low_trade_price > high_price_10:
-                                high_price_10 = p.low_trade_price
-                            elif p.int_pyeong < 30 and p.low_trade_price > high_price_20:
-                                high_price_20 = p.low_trade_price
-                                if p.room_count == 2 and p.low_trade_price > high_price_20_2:
-                                    high_price_20_2 = p.low_trade_price
-                                elif p.room_count == 3 and p.low_trade_price > high_price_20_3:
-                                    high_price_20_3 = p.low_trade_price
-                            elif p.int_pyeong < 40 and p.low_trade_price > high_price_30:
-                                high_price_30 = p.low_trade_price
-                            elif p.low_trade_price > high_price_40:
-                                high_price_40 = p.low_trade_price
+                if c.completion_date:
+                    for p in c.pyeongs:
+                        if p.is_representative and (10 <= p.int_pyeong < 50):
+                            if p.low_trade_price:
+                                # high_price setting
+                                if p.int_pyeong < 20 and p.low_trade_price > high_price_10:
+                                    high_price_10 = p.low_trade_price
+                                elif p.int_pyeong < 30 and p.low_trade_price > high_price_20:
+                                    high_price_20 = p.low_trade_price
+                                    if p.room_count == 2 and p.low_trade_price > high_price_20_2:
+                                        high_price_20_2 = p.low_trade_price
+                                    elif p.room_count == 3 and p.low_trade_price > high_price_20_3:
+                                        high_price_20_3 = p.low_trade_price
+                                elif p.int_pyeong < 40 and p.low_trade_price > high_price_30:
+                                    high_price_30 = p.low_trade_price
+                                elif p.low_trade_price > high_price_40:
+                                    high_price_40 = p.low_trade_price
 
-                            # low_price setting
-                            if p.int_pyeong < 20 and p.low_trade_price < low_price_10:
-                                low_price_10 = p.low_trade_price
-                            elif p.int_pyeong < 30 and p.low_trade_price < low_price_20:
-                                low_price_20 = p.low_trade_price
-                                if p.room_count == 2 and p.low_trade_price < low_price_20_2:
-                                    low_price_20_2 = p.low_trade_price
-                                elif p.room_count == 3 and p.low_trade_price < low_price_20_3:
-                                    low_price_20_3 = p.low_trade_price
-                            elif p.int_pyeong < 40 and p.low_trade_price < low_price_30:
-                                low_price_30 = p.low_trade_price
-                            elif p.low_trade_price < low_price_40:
-                                low_price_40 = p.low_trade_price
+                                # low_price setting
+                                if p.int_pyeong < 20 and p.low_trade_price < low_price_10:
+                                    low_price_10 = p.low_trade_price
+                                elif p.int_pyeong < 30 and p.low_trade_price < low_price_20:
+                                    low_price_20 = p.low_trade_price
+                                    if p.room_count == 2 and p.low_trade_price < low_price_20_2:
+                                        low_price_20_2 = p.low_trade_price
+                                    elif p.room_count == 3 and p.low_trade_price < low_price_20_3:
+                                        low_price_20_3 = p.low_trade_price
+                                elif p.int_pyeong < 40 and p.low_trade_price < low_price_30:
+                                    low_price_30 = p.low_trade_price
+                                elif p.low_trade_price < low_price_40:
+                                    low_price_40 = p.low_trade_price
 
-                            # decision to latest apt
-                            if c.completion_date.year >= latest_year:
-                                key = "latest"
-                            elif c.completion_date.year >= sub_latest_year:
-                                key = "sub_latest"
-                            else:
-                                key = "old"
+                                # decision to latest apt
+                                if c.completion_date.year >= latest_year:
+                                    key = "latest"
+                                elif c.completion_date.year >= sub_latest_year:
+                                    key = "sub_latest"
+                                else:
+                                    key = "old"
 
-                            # categorizes
-                            if p.int_pyeong < 20:
-                                self.set_prices_by_towns(prices_by_towns_10, town, key, c, p)
-                            elif p.int_pyeong < 30:
-                                self.set_prices_by_towns(prices_by_towns_20, town, key, c, p)
-                                if p.room_count == 2:
-                                    self.set_prices_by_towns(prices_by_towns_20_2, town, key, c, p)
-                                elif p.room_count == 3:
-                                    self.set_prices_by_towns(prices_by_towns_20_3, town, key, c, p)
-                            elif p.int_pyeong < 40:
-                                self.set_prices_by_towns(prices_by_towns_30, town, key, c, p)
-                            else:
-                                self.set_prices_by_towns(prices_by_towns_40, town, key, c, p)
+                                # categorizes
+                                if p.int_pyeong < 20:
+                                    self.set_prices_by_towns(prices_by_towns_10, town, key, c, p)
+                                elif p.int_pyeong < 30:
+                                    self.set_prices_by_towns(prices_by_towns_20, town, key, c, p)
+                                    if p.room_count == 2:
+                                        self.set_prices_by_towns(prices_by_towns_20_2, town, key, c, p)
+                                    elif p.room_count == 3:
+                                        self.set_prices_by_towns(prices_by_towns_20_3, town, key, c, p)
+                                elif p.int_pyeong < 40:
+                                    self.set_prices_by_towns(prices_by_towns_30, town, key, c, p)
+                                else:
+                                    self.set_prices_by_towns(prices_by_towns_40, town, key, c, p)
 
         rows_10 = self._generate_rows_prices_by_towns(prices_by_towns_10, high_price_10, low_price_10)
         rows_20 = self._generate_rows_prices_by_towns(prices_by_towns_20, high_price_20, low_price_20)

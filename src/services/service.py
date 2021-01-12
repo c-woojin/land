@@ -29,10 +29,14 @@ def get_regions(region_no: str) -> List[Region]:
 
 def get_complexes(region_no: str) -> List[Complex]:
     provider = NaverLandProvider()
+    complexes = []
     with provider:
         try:
             complex_nos = provider.list_complexes(region_no)
-            complexes = [provider.get_complex_detail(no) for no in complex_nos]
+            for no in complex_nos:
+                c = provider.get_complex_detail(no)
+                if '도시형' not in c.complex_name and '오피스텔' not in c.type_name:
+                    complexes.append(c)
         except RequestError as e:
             return e
     return complexes

@@ -148,10 +148,12 @@ class NaverLandProvider(AbstractLandProvider):
         ]
 
     def make_completion_date(self, ymd: str) -> date:
-        year = int(ymd[:4])
-        month = int(ymd[4:6]) if ymd[4:6] else 1
-        day = int(ymd[6:]) if ymd[6:] else 1
-        return date(year=year, month=month, day=day)
+        if ymd:
+            year = int(ymd[:4])
+            month = int(ymd[4:6]) if ymd[4:6] else 1
+            day = int(ymd[6:]) if ymd[6:] else 1
+            return date(year=year, month=month, day=day)
+        return None
 
     def make_safe_int(self, value) -> int:
         try:
