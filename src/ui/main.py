@@ -218,7 +218,7 @@ class MyApp(QWidget):
             return
         town = self.towns[town_index-1]
         wait_pop = QMessageBox(text="잠시만 기다려 주세요", parent=self)
-        wait_pop.setWindowModality(Qt.WindowModality)
+        wait_pop.setWindowModality(Qt.WindowModality())
         wait_pop.show()
         complexes = service.get_complexes(town.region_no)
         progress_title = f'{self.cb_city.currentText()} {self.cb_region.currentText()} {self.cb_town.currentText()} {len(complexes)}개 단지의 데이터를 수집합니다.'

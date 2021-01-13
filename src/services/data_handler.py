@@ -65,6 +65,7 @@ class LandXlsHandler:
                             p.lease_date.strftime("전세 : %y/%m") if p.lease_date else ""),
                          "v" if p.is_representative else ""]
                     )
+                current_sheet.append([])
         wb.save(self.file_name)
 
     def write_analysis_xls(self, latest_year: int, sub_latest_year: int):
@@ -218,10 +219,10 @@ class LandXlsHandler:
             complexes = r.get('complexes')
             row = [f"{r.get('period')[0]} ~ {r.get('period')[1]}"]
             for town, complex_dict in prices_by_towns.items():
-                c = ""
                 for new_key in complex_dict.keys():
+                    c = ""
                     for cx in complexes.get((town.region_name, new_key)):
-                        c = c + "\r" if len(c) > 0 else c
+                        c = c + "\n" if len(c) > 0 else c
                         c += cx
                     row.append(f"{c}")
             sheet.append(row)

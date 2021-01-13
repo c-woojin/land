@@ -1,4 +1,3 @@
-import re
 from dataclasses import dataclass, field
 from typing import Optional, List
 from datetime import date
@@ -37,7 +36,12 @@ class Pyeong:
 
     @property
     def int_pyeong(self):
-        return int(re.sub(r'[a-zA-Z]', '', self.pyeong_name))
+        int_p = []
+        for c in self.pyeong_name:
+            if c.isalpha():
+                break
+            int_p.append(c)
+        return int("".join(int_p))
 
 
 @dataclass
@@ -73,12 +77,11 @@ class Complex:
         candidates_by_pyeong = {}
         for p in self.pyeongs:
             p.is_representative = False
-            int_p = int(re.sub(r'[a-zA-Z]', '', p.pyeong_name))
             if p.trade_date:
-                candidate = candidates_by_pyeong.setdefault(int_p, p)
+                candidate = candidates_by_pyeong.setdefault(p.int_pyeong, p)
                 for condition in representative_conditions:
                     if condition(p, candidate):
-                        candidates_by_pyeong[int_p] = p
+                        candidates_by_pyeong[p.int_pyeong] = p
 
         for pyeong in candidates_by_pyeong.values():
             pyeong.is_representative = True
