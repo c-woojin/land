@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Optional, List
+from typing import Optional, List, Dict
 from datetime import date
 
 from src.domain.values import Price
@@ -54,6 +54,7 @@ class Complex:
     completion_date: Optional[date] = None
     high_floor: Optional[int] = None
     type_name: Optional[str] = None
+    high_prices: Optional[Dict[int, int]] = field(default_factory=dict)
     pyeongs: Optional[List[Pyeong]] = field(default_factory=list)
 
     LOW_FLOOR = [1, 2, 3]
@@ -119,3 +120,11 @@ class Complex:
         pyeong.lease_floor = selected_price.floor
         pyeong.high_lease_price = selected_price.price
         return selected_price
+
+    def set_high_prices(self):
+        for p in self.pyeongs:
+            if p.is_representative:
+                p_key = p.int_pyeong
+                high_price = self.high_prices.setdefault(p_key // 10 * 10, p.low_trade_price)
+                if p.low_trade_price > high_price:
+                    self.high_prices[p_key] = p.low_trade_price

@@ -5,12 +5,13 @@ from PyQt5.QtWidgets import (
     QApplication, QWidget, QLabel, QComboBox, QHBoxLayout, QVBoxLayout, QPushButton,
     QProgressDialog, QMessageBox, QListWidget, QListWidgetItem, QFileDialog, QLineEdit, QInputDialog
 )
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QModelIndex
 
 from src.services import service, data_handler
 from src.domain.entity.complex import Complex
 from src.domain.values import Region
 from src.ui.data_edit import DataEditView
+from src.ui.checkable_combobox import CheckableComboBox
 
 
 class MyApp(QWidget):
@@ -25,7 +26,7 @@ class MyApp(QWidget):
         self.towns = []
         self.cb_city = QComboBox()
         self.cb_region = QComboBox()
-        self.cb_town = QComboBox()
+        self.cb_town = CheckableComboBox()
         self.btn_import = QPushButton('데이터수집')
         self.data: List[Tuple[Region, List[Complex]]] = []
         self.data_list_widget = QListWidget()
@@ -160,26 +161,30 @@ class MyApp(QWidget):
 
     def data_analysis_excel_pushed(self):
         if self.data:
+            err_msg = ""
             while True:
                 try:
-                    latest_year, ok = QInputDialog.getText(self, "신축기준년도", "신축기준년도를 입력하세요:")
-                    latest_year = int(latest_year)
+                    latest_year, ok = QInputDialog.getText(self, "신축기준년도", f"{err_msg}신축기준년도를 입력하세요:")
                     if not ok:
                         return
+                    latest_year = int(latest_year)
                     break
                 except (ValueError, TypeError):
+                    err_msg = "올바른 년도를 입력하세요.(예:2020)\n"
                     continue
-
+            err_msg = ""
             while True:
                 try:
-                    sub_latest_year, ok = QInputDialog.getText(self, "준 신축기준년도", "준 신축기준년도를 입력하세요:")
+                    sub_latest_year, ok = QInputDialog.getText(self, "준 신축기준년도", f"{err_msg}준 신축기준년도를 입력하세요:")
+                    if not ok:
+                        return
                     sub_latest_year = int(sub_latest_year)
                     if sub_latest_year >= latest_year:
+                        err_msg = f"신축년도 기준보다 작아야합니다.(신축년도:{latest_year})\n"
                         continue
-                    if not ok:
-                        return
                     break
                 except (ValueError, TypeError):
+                    err_msg = "올바른 년도를 입력하세요.(예:2020)\n"
                     continue
 
             file_name, ok = QFileDialog.getSaveFileUrl(self, "저장할 위치를 선택하세요.")
@@ -213,35 +218,54 @@ class MyApp(QWidget):
             self.input_high_household_count.setText(str(self.set_high_hc))
 
     def start_import(self):
-        town_index = self.cb_town.currentIndex()
-        if town_index == -1 or town_index == 0:
-            return
-        town = self.towns[town_index-1]
-        wait_pop = QMessageBox(text="잠시만 기다려 주세요", parent=self)
-        wait_pop.setWindowModality(Qt.WindowModality())
-        wait_pop.show()
-        complexes = service.get_complexes(town.region_no)
-        progress_title = f'{self.cb_city.currentText()} {self.cb_region.currentText()} {self.cb_town.currentText()} {len(complexes)}개 단지의 데이터를 수집합니다.'
-        wait_pop.close()
-        progress_dialog = QProgressDialog(progress_title, "취소", 0, len(complexes)+1, self) if complexes else QProgressDialog("수집할 데이터가 없습니다.", "취소", 0, len(complexes)+1, self)
+        selected_indices = self.cb_town.get_select_items()
+        town_complex_list = []
+        complex_counts = 0
+        progress_title = f'선택하신 지역의 단지 리스트를 수집중입니다. 잠시만 기다려주세요.'
+        progress_dialog = QProgressDialog(progress_title, "취소", 0, len(selected_indices) + 1, self)
         progress_dialog.canceled.connect(self.progress_canceled)
         progress = 0
         progress_dialog.setValue(progress)
         progress_dialog.setWindowModality(Qt.WindowModal)
         progress_dialog.show()
-        for complex in complexes:
+        for town_index in selected_indices:
             if self.is_progress_canceled is True:
                 self.is_progress_canceled = False
                 return
-            time.sleep(0.3)
-            progress_text = f'[{progress}/{len(complexes)}] {complex.complex_name} 단지 데이터를 수집중입니다.'
-            progress_dialog.setLabelText(progress_text)
-            service.apply_price(complex)
+            if town_index == -1 or town_index == 0:
+                continue
+            town = self.towns[town_index-1]
+            complexes = service.get_complexes(town.region_no)
+            complex_counts += len(complexes)
+            if complexes:
+                town_complex_list.append((town, complexes))
             progress += 1
             progress_dialog.setValue(progress)
         progress += 1
         progress_dialog.setValue(progress)
-        if complexes:
+
+        progress_title = f'{self.cb_city.currentText()} {self.cb_region.currentText()} {complex_counts}개 단지의 데이터를 수집합니다.'
+        progress_dialog = QProgressDialog(progress_title, "취소", 0, complex_counts+1, self) if town_complex_list else QProgressDialog("수집할 데이터가 없습니다.", "취소", 0,complex_counts+1, self)
+        progress_dialog.canceled.connect(self.progress_canceled)
+        progress = 0
+        progress_dialog.setValue(progress)
+        progress_dialog.setWindowModality(Qt.WindowModal)
+        progress_dialog.show()
+        selected_towns = [town.region_name for town, _ in town_complex_list]
+        for town, complexes in town_complex_list:
+            for complex in complexes:
+                if self.is_progress_canceled is True:
+                    self.is_progress_canceled = False
+                    return
+                time.sleep(0.15)
+                progress_text = f'선택지역 :{selected_towns}\n[{progress}/{complex_counts}] {town.region_name} - {complex.complex_name} 단지 데이터를 수집중입니다.'
+                progress_dialog.setLabelText(progress_text)
+                service.apply_price(complex)
+                progress += 1
+                progress_dialog.setValue(progress)
+        progress += 1
+        progress_dialog.setValue(progress)
+        for town, complexes in town_complex_list:
             self.append_data((town, complexes))
 
     def progress_canceled(self):

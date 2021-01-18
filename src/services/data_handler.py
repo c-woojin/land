@@ -4,9 +4,11 @@ from datetime import date, timedelta
 from math import floor
 
 import openpyxl
+from openpyxl.styles import PatternFill, Color
 
 from src.domain.entity.complex import Complex
 from src.domain.values import Region
+from src.services import service
 
 
 class LandXlsHandler:
@@ -18,6 +20,10 @@ class LandXlsHandler:
     def write_raw_xls(self):
         wb = openpyxl.Workbook()
         wb.remove(wb.active)
+        all_complexes = []
+        for _, complexes in self.data:
+            all_complexes += complexes
+        captain_list = service.find_captain_complex(all_complexes)
 
         for region, complexes in self.data:
             current_sheet = wb.create_sheet()
@@ -25,6 +31,7 @@ class LandXlsHandler:
             current_sheet.append(['단지명', '입주연도', '총세대수', '공급(㎡)', '공급면적', '전용(㎡)', '전용면적', '세대', '매매최저가', '층',
                                   '전세최고가', '층', '매전갭', '전세가율', '매매평단', '전세평단', '방', '욕실', '구조', '타입', '비고', '거래일자',
                                   '대표평형'])
+            row = 2
             for c in complexes:
                 for p in c.pyeongs:
                     etc = ""
@@ -65,7 +72,13 @@ class LandXlsHandler:
                             p.lease_date.strftime("전세 : %y/%m") if p.lease_date else ""),
                          "v" if p.is_representative else ""]
                     )
+                    if (p.int_pyeong // 10 * 10, c) in captain_list.items():
+                        current_sheet.cell(row=row, column=1).fill = PatternFill(start_color="F7FF00",
+                                                                                 end_color="F7FF00",
+                                                                                 fill_type="solid")
+                    row += 1
                 current_sheet.append([])
+                row += 1
         wb.save(self.file_name)
 
     def write_analysis_xls(self, latest_year: int, sub_latest_year: int):

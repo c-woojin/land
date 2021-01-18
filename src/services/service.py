@@ -1,6 +1,5 @@
 from typing import List, Dict
 from datetime import date
-import time
 
 from src.adapters.provider import NaverLandProvider, RequestError, Region
 from src.domain.entity.complex import Complex
@@ -62,6 +61,7 @@ def apply_price(complex: Complex):
                 lambda p, c: p.trade_date == c.trade_date and p.low_trade_price < c.low_trade_price
             ]
             complex.set_representative_pyeongs(representatives_condition)
+            complex.set_high_prices()
         except RequestError as e:
             return e
     return complex
@@ -75,3 +75,13 @@ def get_prices(complex_no: str, pyeong_no: str, trade_type: TradeType) -> List[D
         except RequestError as e:
             return e
     return prices
+
+
+def find_captain_complex(complexes: List[Complex]) -> Dict[int, Complex]:
+    captain_list = dict()
+    for c in complexes:
+        for p_key, high_price in c.high_prices.items():
+            captain = captain_list.setdefault(p_key, c)
+            if high_price > captain.high_prices.get(p_key):
+                captain_list[p_key] = c
+    return captain_list
