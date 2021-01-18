@@ -228,6 +228,7 @@ class MyApp(QWidget):
         progress_dialog.setValue(progress)
         progress_dialog.setWindowModality(Qt.WindowModal)
         progress_dialog.show()
+        progress_dialog.setLabelText(progress_title)
         for town_index in selected_indices:
             if self.is_progress_canceled is True:
                 self.is_progress_canceled = False
@@ -241,6 +242,7 @@ class MyApp(QWidget):
                 town_complex_list.append((town, complexes))
             progress += 1
             progress_dialog.setValue(progress)
+        time.sleep(1)
         progress += 1
         progress_dialog.setValue(progress)
 
@@ -263,6 +265,7 @@ class MyApp(QWidget):
                 service.apply_price(complex)
                 progress += 1
                 progress_dialog.setValue(progress)
+        time.sleep(1)
         progress += 1
         progress_dialog.setValue(progress)
         for town, complexes in town_complex_list:
