@@ -113,8 +113,9 @@ class LandXlsHandler:
                                 # high_price setting
                                 if p.int_pyeong < 20 and p.low_trade_price > high_price_10:
                                     high_price_10 = p.low_trade_price
-                                elif p.int_pyeong < 30 and p.low_trade_price > high_price_20:
-                                    high_price_20 = p.low_trade_price
+                                elif p.int_pyeong < 30:
+                                    if p.low_trade_price > high_price_20:
+                                        high_price_20 = p.low_trade_price
                                     if p.room_count == 2 and p.low_trade_price > high_price_20_2:
                                         high_price_20_2 = p.low_trade_price
                                     elif p.room_count == 3 and p.low_trade_price > high_price_20_3:
@@ -127,8 +128,9 @@ class LandXlsHandler:
                                 # low_price setting
                                 if p.int_pyeong < 20 and p.low_trade_price < low_price_10:
                                     low_price_10 = p.low_trade_price
-                                elif p.int_pyeong < 30 and p.low_trade_price < low_price_20:
-                                    low_price_20 = p.low_trade_price
+                                elif p.int_pyeong < 30:
+                                    if p.low_trade_price < low_price_20:
+                                        low_price_20 = p.low_trade_price
                                     if p.room_count == 2 and p.low_trade_price < low_price_20_2:
                                         low_price_20_2 = p.low_trade_price
                                     elif p.room_count == 3 and p.low_trade_price < low_price_20_3:
@@ -160,12 +162,16 @@ class LandXlsHandler:
                                 else:
                                     self.set_prices_by_towns(prices_by_towns_40, town, key, c, p)
 
+        print(prices_by_towns_20_2)
+        print(high_price_20_2, low_price_20_2)
         rows_10 = self._generate_rows_prices_by_towns(prices_by_towns_10, high_price_10, low_price_10)
         rows_20 = self._generate_rows_prices_by_towns(prices_by_towns_20, high_price_20, low_price_20)
         rows_20_2 = self._generate_rows_prices_by_towns(prices_by_towns_20_2, high_price_20_2, low_price_20_2)
         rows_20_3 = self._generate_rows_prices_by_towns(prices_by_towns_20_3, high_price_20_3, low_price_20_3)
         rows_30 = self._generate_rows_prices_by_towns(prices_by_towns_30, high_price_30, low_price_30)
         rows_40 = self._generate_rows_prices_by_towns(prices_by_towns_40, high_price_40, low_price_40)
+
+        print("1", rows_20_2)
 
         sheet.title = "10평"
         self._write_prices_by_towns_xls(sheet, prices_by_towns_10, latest_year, sub_latest_year, rows_10)
